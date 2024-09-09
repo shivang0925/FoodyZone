@@ -6,9 +6,10 @@ export const BASE_URL = "http://localhost:9000";
 
 function App() {
   const [data, setData] = useState(null);
-  const [selectSearch, setSelectSearch] = useState("all");
+  const [selectSearch, setSelectSearch] = useState(null);
   const [dataLoading, setDataLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [selectedBtn, setSelectedBtn] = useState("all");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -19,6 +20,7 @@ function App() {
         setData(json);
         setSelectSearch(json);
         setDataLoading(false);
+        setSelectedBtn(json);
       } catch (error) {
         setError("Unable to fetch data");
       }
@@ -30,8 +32,48 @@ function App() {
   console.log(data);
 
   const searchFood = (e) => {
-    
+    const searchValue = e.target.value;
+    if (searchValue == "") {
+      setSelectSearch(null);
+    }
+    const filter = data?.filter((food) =>
+      food.name.toLowerCase().includes(searchValue.toLowerCase())
+    );
+    setSelectSearch(filter);
   };
+
+  const handleBtn = (type) => {
+    if (selectedBtn === "all") {
+      setSelectSearch(data);
+      setSelectedBtn("all");
+      return;
+    }
+
+    const filter = data?.filter((food) =>
+      food.type.toLowerCase().includes(type.toLowerCase())
+    );
+    setSelectSearch(filter);
+    setSelectedBtn(type);
+  };
+
+  const foodBtn = [
+    {
+      name: "All",
+      type: "all",
+    },
+    {
+      name: "Breakfast",
+      type: "breakfast",
+    },
+    {
+      name: "Lunch",
+      type: "lunch",
+    },
+    {
+      name: "Dinner",
+      type: "dinner",
+    },
+  ];
 
   if (error) return <div>{error}</div>;
   if (dataLoading) return <div>loading....</div>;
@@ -50,10 +92,11 @@ function App() {
         </TopContainer>
 
         <FilterContainer>
-          <Button>All</Button>
-          <Button>Breakfast</Button>
-          <Button>Lunch</Button>
-          <Button>Dinner</Button>
+          {foodBtn.map((value) => (
+            <Button key={value.name} onClick={() => handleBtn(value.type)}>
+              {value.name}
+            </Button>
+          ))}
         </FilterContainer>
       </Container>
       <Cards data={selectSearch} />
